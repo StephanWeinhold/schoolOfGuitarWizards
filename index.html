@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>SOGW</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
+<style>
+table,
+thead,
+tbody,
+tfoot,
+tr,
+th,
+td {
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-collapse: inherit;
+    border-spacing: 0;
+    border-color: inherit;
+    vertical-align: inherit;
+    text-align: left;
+    font-weight: inherit;
+    -webkit-border-horizontal-spacing: 0;
+    -webkit-border-vertical-spacing: 0;
+}
+
+#fretboard tr {
+  border-right: 2px solid rgb(180, 180, 180);
+}
+
+#fretboard td {
+  background-color: rgb(186, 147, 114);
+  border: 1px solid rgb(180, 180, 180);
+  height: 20px;
+  text-align: center;
+  width: 40px;
+}
+
+#fretboard td:nth-child(3) {
+  border-left: 3px solid rgb(120, 120, 120);
+}
+
+#fretboard td.correct {
+  background-color: rgb(10, 100, 20);
+}
+
+#fretboard td.wrong {
+  background-color: rgb(200, 50, 20);
+}
+
+#fretboard td.number {
+  background-color: rgb(255, 255, 255);
+  border: 0 none;
+}
+</style>
+</head>
+<body>
+  <section>
+    <main>
+      <div id="sogw">
+        <div>
+          <div id=""></div>
+          <div id="noteToFind"></div>
+          <div id="points">0</div>
+        </div>
+        <div>
+          <div class="container">
+            <div id="fretboard"></div>
+          </div>
+          <div id=""></div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <script>
+let app = {};
+app.functions = {};
+app.functions.checks = {};
+
+let $ = function(e) { return document.getElementById(e); };
+
+app.scales = {};
+app.chords = {};
+
+app.strings = { 0:'E1', 1:'A1', 2:'D1', 3:'G1', 4:'B1', 5:'e2' };
+
+app.strings.E1 = {
+  notes: {
+     0: { pos:  0, name: 'E',  nameAlt: '',   octave: '2'},
+     1: { pos:  1, name: 'F',  nameAlt: '',   octave: '2'},
+     2: { pos:  2, name: 'F#', nameAlt: 'Gb', octave: '2'},
+     3: { pos:  3, name: 'G',  nameAlt: '',   octave: '2'},
+     4: { pos:  4, name: 'G#', nameAlt: 'Ab', octave: '2'},
+     5: { pos:  5, name: 'A',  nameAlt: '',   octave: '2'},
+     6: { pos:  6, name: 'A#', nameAlt: 'Bb', octave: '2'},
+     7: { pos:  7, name: 'B',  nameAlt: '',   octave: '2'},
+     8: { pos:  8, name: 'C',  nameAlt: '',   octave: '3'},
+     9: { pos:  9, name: 'C#', nameAlt: 'Db', octave: '3'},
+    10: { pos: 10, name: 'D',  nameAlt: '',   octave: '3'},
+    11: { pos: 11, name: 'D#', nameAlt: 'Eb', octave: '3'},
+    12: { pos: 12, name: 'E',  nameAlt: '',   octave: '3'},
+    13: { pos: 13, name: 'F',  nameAlt: '',   octave: '3'},
+    14: { pos: 14, name: 'F#', nameAlt: 'Gb', octave: '3'},
+    15: { pos: 15, name: 'G',  nameAlt: '',   octave: '3'},
+    16: { pos: 16, name: 'G#', nameAlt: 'Ab', octave: '3'},
+    17: { pos: 17, name: 'A',  nameAlt: '',   octave: '3'},
+    18: { pos: 18, name: 'A#', nameAlt: 'Bb', octave: '3'},
+    19: { pos: 19, name: 'B',  nameAlt: '',   octave: '3'},
+    20: { pos: 20, name: 'C',  nameAlt: '',   octave: '4'},
+    21: { pos: 21, name: 'C#', nameAlt: 'Db', octave: '4'},
+    22: { pos: 22, name: 'D',  nameAlt: '',   octave: '4'},
+    23: { pos: 23, name: 'D#', nameAlt: 'Eb', octave: '4'},
+    24: { pos: 24, name: 'E',  nameAlt: '',   octave: '4'}
+  }
+};
+
+app.strings.A1 = {
+  notes: {
+     0: { pos:  0, name: 'A',  nameAlt: '',   octave: '2'},
+     1: { pos:  1, name: 'A#', nameAlt: 'Bb', octave: '2'},
+     2: { pos:  2, name: 'B',  nameAlt: '',   octave: '2'},
+     3: { pos:  3, name: 'C',  nameAlt: '',   octave: '3'},
+     4: { pos:  4, name: 'C#', nameAlt: 'Db', octave: '3'},
+     5: { pos:  5, name: 'D',  nameAlt: '',   octave: '3'},
+     6: { pos:  6, name: 'D#', nameAlt: 'Eb', octave: '3'},
+     7: { pos:  7, name: 'E',  nameAlt: '',   octave: '3'},
+     8: { pos:  8, name: 'F',  nameAlt: '',   octave: '3'},
+     9: { pos:  9, name: 'F#', nameAlt: 'Gb', octave: '3'},
+    10: { pos: 10, name: 'G',  nameAlt: '',   octave: '3'},
+    11: { pos: 11, name: 'G#', nameAlt: 'Ab', octave: '3'},
+    12: { pos: 12, name: 'A',  nameAlt: '',   octave: '3'},
+    13: { pos: 13, name: 'A#', nameAlt: 'Bb', octave: '3'},
+    14: { pos: 14, name: 'B',  nameAlt: '',   octave: '3'},
+    15: { pos: 15, name: 'C',  nameAlt: '',   octave: '4'},
+    16: { pos: 16, name: 'C#', nameAlt: 'Db', octave: '4'},
+    17: { pos: 17, name: 'D',  nameAlt: '',   octave: '4'},
+    18: { pos: 18, name: 'D#', nameAlt: 'Eb', octave: '4'},
+    19: { pos: 19, name: 'E',  nameAlt: '',   octave: '4'},
+    20: { pos: 20, name: 'F',  nameAlt: '',   octave: '4'},
+    21: { pos: 21, name: 'F#', nameAlt: 'Gb', octave: '4'},
+    22: { pos: 22, name: 'G',  nameAlt: '',   octave: '4'},
+    23: { pos: 23, name: 'G#', nameAlt: 'Ab', octave: '4'},
+    24: { pos: 24, name: 'A',  nameAlt: '',   octave: '4'},
+  }
+};
+
+app.strings.D1 = {
+  notes: {
+     0: { pos:  0, name: 'D',  nameAlt: '',   octave: '3'},
+     1: { pos:  1, name: 'D#', nameAlt: 'Eb', octave: '3'},
+     2: { pos:  2, name: 'E',  nameAlt: '',   octave: '3'},
+     3: { pos:  3, name: 'F',  nameAlt: '',   octave: '3'},
+     4: { pos:  4, name: 'F#', nameAlt: 'Gb', octave: '3'},
+     5: { pos:  5, name: 'G',  nameAlt: '',   octave: '3'},
+     6: { pos:  6, name: 'G#', nameAlt: 'Ab', octave: '3'},
+     7: { pos:  7, name: 'A',  nameAlt: '',   octave: '3'},
+     8: { pos:  8, name: 'A#', nameAlt: 'Bb', octave: '3'},
+     9: { pos:  9, name: 'B',  nameAlt: '',   octave: '3'},
+    10: { pos: 10, name: 'C',  nameAlt: '',   octave: '4'},
+    11: { pos: 11, name: 'C#', nameAlt: 'Db', octave: '4'},
+    12: { pos: 12, name: 'D',  nameAlt: '',   octave: '4'},
+    13: { pos: 13, name: 'D#', nameAlt: 'Eb', octave: '4'},
+    14: { pos: 14, name: 'E',  nameAlt: '',   octave: '4'},
+    15: { pos: 15, name: 'F',  nameAlt: '',   octave: '4'},
+    16: { pos: 16, name: 'F#', nameAlt: 'Gb', octave: '4'},
+    17: { pos: 17, name: 'G',  nameAlt: '',   octave: '4'},
+    18: { pos: 18, name: 'G#', nameAlt: 'Ab', octave: '4'},
+    19: { pos: 19, name: 'A',  nameAlt: '',   octave: '4'},
+    20: { pos: 20, name: 'A#', nameAlt: 'Bb', octave: '4'},
+    21: { pos: 21, name: 'B',  nameAlt: '',   octave: '4'},
+    22: { pos: 22, name: 'C',  nameAlt: '',   octave: '5'},
+    23: { pos: 23, name: 'C#', nameAlt: 'Db', octave: '5'},
+    24: { pos: 24, name: 'D',  nameAlt: '',   octave: '5'},
+  }
+};
+
+app.strings.G1 = {
+  notes: {
+     0: { pos:  0, name: 'G',  nameAlt: '',   octave: '3'},
+     1: { pos:  1, name: 'G#', nameAlt: 'Ab', octave: '3'},
+     2: { pos:  2, name: 'A',  nameAlt: '',   octave: '3'},
+     3: { pos:  3, name: 'A#', nameAlt: 'Bb', octave: '3'},
+     4: { pos:  4, name: 'B',  nameAlt: '',   octave: '3'},
+     5: { pos:  5, name: 'C',  nameAlt: '',   octave: '4'},
+     6: { pos:  6, name: 'C#', nameAlt: 'Db', octave: '4'},
+     7: { pos:  7, name: 'D',  nameAlt: '',   octave: '4'},
+     8: { pos:  8, name: 'D#', nameAlt: 'Eb', octave: '4'},
+     9: { pos:  9, name: 'E',  nameAlt: '',   octave: '4'},
+    10: { pos: 10, name: 'F',  nameAlt: '',   octave: '4'},
+    11: { pos: 11, name: 'F#', nameAlt: 'Gb', octave: '4'},
+    12: { pos: 12, name: 'G',  nameAlt: '',   octave: '4'},
+    13: { pos: 13, name: 'G#', nameAlt: 'Ab', octave: '4'},
+    14: { pos: 14, name: 'A',  nameAlt: '',   octave: '4'},
+    15: { pos: 15, name: 'A#', nameAlt: 'Bb', octave: '4'},
+    16: { pos: 16, name: 'B',  nameAlt: '',   octave: '4'},
+    17: { pos: 17, name: 'C',  nameAlt: '',   octave: '5'},
+    18: { pos: 18, name: 'C#', nameAlt: 'Db', octave: '5'},
+    19: { pos: 19, name: 'D',  nameAlt: '',   octave: '5'},
+    20: { pos: 20, name: 'D#', nameAlt: 'Eb', octave: '5'},
+    21: { pos: 21, name: 'E',  nameAlt: '',   octave: '5'},
+    22: { pos: 22, name: 'F',  nameAlt: '',   octave: '5'},
+    23: { pos: 23, name: 'F#', nameAlt: 'Gb', octave: '5'},
+    24: { pos: 24, name: 'G',  nameAlt: '',   octave: '5'},
+  }
+};
+
+app.strings.B1 = {
+  notes: {
+     0: { pos:  0, name: 'B',  nameAlt: '',   octave: '3'},
+     1: { pos:  1, name: 'C',  nameAlt: '',   octave: '4'},
+     2: { pos:  2, name: 'C#', nameAlt: 'Db', octave: '4'},
+     3: { pos:  3, name: 'D',  nameAlt: '',   octave: '4'},
+     4: { pos:  4, name: 'D#', nameAlt: 'Eb', octave: '4'},
+     5: { pos:  5, name: 'E',  nameAlt: '',   octave: '4'},
+     6: { pos:  6, name: 'F',  nameAlt: '',   octave: '4'},
+     7: { pos:  7, name: 'F#', nameAlt: 'Gb', octave: '4'},
+     8: { pos:  8, name: 'G',  nameAlt: '',   octave: '4'},
+     9: { pos:  9, name: 'G#', nameAlt: 'Ab', octave: '4'},
+    10: { pos: 10, name: 'A',  nameAlt: '',   octave: '4'},
+    11: { pos: 11, name: 'A#', nameAlt: 'Bb', octave: '4'},
+    12: { pos: 12, name: 'B',  nameAlt: '',   octave: '4'},
+    13: { pos: 13, name: 'C',  nameAlt: '',   octave: '5'},
+    14: { pos: 14, name: 'C#', nameAlt: 'Db', octave: '5'},
+    15: { pos: 15, name: 'D',  nameAlt: '',   octave: '5'},
+    16: { pos: 16, name: 'D#', nameAlt: 'Eb', octave: '5'},
+    17: { pos: 17, name: 'E',  nameAlt: '',   octave: '5'},
+    18: { pos: 18, name: 'F',  nameAlt: '',   octave: '5'},
+    19: { pos: 19, name: 'F#', nameAlt: 'Gb', octave: '5'},
+    20: { pos: 20, name: 'G',  nameAlt: '',   octave: '5'},
+    21: { pos: 21, name: 'G#', nameAlt: 'Ab', octave: '5'},
+    22: { pos: 22, name: 'A',  nameAlt: '',   octave: '5'},
+    23: { pos: 23, name: 'A#', nameAlt: 'Bb', octave: '5'},
+    24: { pos: 24, name: 'B',  nameAlt: '',   octave: '5'},
+  }
+};
+
+app.strings.E2 = {
+  notes: {
+     0: { pos:  0, name: 'E',  nameAlt: '',   octave: '4'},
+     1: { pos:  1, name: 'F',  nameAlt: '',   octave: '4'},
+     2: { pos:  2, name: 'F#', nameAlt: 'Gb', octave: '4'},
+     3: { pos:  3, name: 'G',  nameAlt: '',   octave: '4'},
+     4: { pos:  4, name: 'G#', nameAlt: 'Ab', octave: '4'},
+     5: { pos:  5, name: 'A',  nameAlt: '',   octave: '4'},
+     6: { pos:  6, name: 'A#', nameAlt: 'Bb', octave: '4'},
+     7: { pos:  7, name: 'B',  nameAlt: '',   octave: '4'},
+     8: { pos:  8, name: 'C',  nameAlt: '',   octave: '5'},
+     9: { pos:  9, name: 'C#', nameAlt: 'Db', octave: '5'},
+    10: { pos: 10, name: 'D',  nameAlt: '',   octave: '5'},
+    11: { pos: 11, name: 'D#', nameAlt: 'Eb', octave: '5'},
+    12: { pos: 12, name: 'E',  nameAlt: '',   octave: '5'},
+    13: { pos: 13, name: 'F',  nameAlt: '',   octave: '5'},
+    14: { pos: 14, name: 'F#', nameAlt: 'Gb', octave: '5'},
+    15: { pos: 15, name: 'G',  nameAlt: '',   octave: '5'},
+    16: { pos: 16, name: 'G#', nameAlt: 'Ab', octave: '5'},
+    17: { pos: 17, name: 'A',  nameAlt: '',   octave: '5'},
+    18: { pos: 18, name: 'A#', nameAlt: 'Bb', octave: '5'},
+    19: { pos: 19, name: 'B',  nameAlt: '',   octave: '5'},
+    20: { pos: 20, name: 'C',  nameAlt: '',   octave: '6'},
+    21: { pos: 21, name: 'C#', nameAlt: 'Db', octave: '6'},
+    22: { pos: 22, name: 'D',  nameAlt: '',   octave: '6'},
+    23: { pos: 23, name: 'D#', nameAlt: 'Eb', octave: '6'},
+    24: { pos: 24, name: 'E',  nameAlt: '',   octave: '6'},
+  }
+};
+
+app.config = {
+  stringsToGuess: { 0:'E2', 1:'B1', 2:'G1', 3:'D1', 4:'A1', 5:'E1' },
+  mode: 'findAllOccurences',
+  numberOfNotesToFind: 3,
+};
+
+/* ############################################################################# FUNCTIONS */
+
+app.functions.fillFretboard = function() {
+  let output = '<table>';
+
+  let fretsToMark = [0, 3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+  output += '<tr><td class="number"></td>';
+  for (let i = 0, lenI = Object.keys(app.strings[app.config.stringsToGuess[i]].notes).length; i < lenI; ++i) {
+    if (fretsToMark.indexOf(i) >= 0) {
+      output += '<td class="number">' + i + '</td>';
+    }
+    else {
+      output += '<td class="number"></td>';
+    }
+  }
+  output += '</tr>';
+
+  for (let i = 0, lenI = Object.keys(app.config.stringsToGuess).length; i < lenI; ++i) {
+    output += '<tr id="s_' + app.config.stringsToGuess[i] + '" class="string">';
+    output += '<td class="number">' + app.config.stringsToGuess[i] + '</td>';
+
+    for (let j = 0, lenJ = Object.keys(app.strings[app.config.stringsToGuess[i]].notes).length; j < lenJ; ++j) {
+      let string = app.config.stringsToGuess[i],
+          note = app.strings[app.config.stringsToGuess[i]].notes[j],
+          id = 's_' + string + '_n_' + note.name + note.octave;
+      output += '<td id="' + id + '" class="note" ';
+      output += 'data-string="' + string + '" ';
+      output += 'data-note-pos="' + note.pos + '" ';
+      output += 'data-note-name="' + note.name + '" ';
+      output += 'data-note-namealt="' + note.nameAlt + '" ';
+      output += 'data-note-octave="' + note.octave + '" ';
+      output += '</td>';
+    }
+
+    output += '</tr>';
+  }
+
+  output += '</table>';
+
+  return output;
+};
+
+// Returns note
+app.functions.getNoteFromCellId = function(cellId) {
+  let note = $(cellId).getAttribute('data-note-name') + $(cellId).getAttribute('data-note-octave');
+
+  if ($(cellId).getAttribute('data-note-namealt') != '') {
+    note += '<br />' + $(cellId).getAttribute('data-note-namealt') + $(cellId).getAttribute('data-note-octave');
+  }
+
+  return note;
+};
+
+// Pick notes to find
+app.functions.getNotesToFind = function(numberOfNotesToFind, findAnyOccurence, strict) {
+// Mocking TODO: change
+  return ['C', 'Db', 'E'];
+};
+
+app.functions.collectAllOccurencesOfNote = function(noteToCollect, findAnyOccurence, strict) {
+  let allOccurencesOfNoteA = [];
+
+  for (let i = 0, lenI = Object.keys(app.config.stringsToGuess).length; i < lenI; ++i) {
+    for (let j = 0, lenJ = Object.keys(app.strings[app.config.stringsToGuess[i]].notes).length; j < lenJ; ++j) {
+      let currentNote = app.strings[app.config.stringsToGuess[i]].notes[j].name;
+
+      if (strict == true) {
+        currentNote += app.strings[app.config.stringsToGuess[i]].notes[j].octave;
+      }
+
+      let noteToCheck = noteToCollect;
+      if (findAnyOccurence == false && strict == false) {
+        noteToCheck = noteToCheck.slice(0, -1);
+      }
+
+      if (noteToCheck == currentNote) {
+        allOccurencesOfNoteA.push('s_' + app.config.stringsToGuess[i] + '_n_' + app.strings[app.config.stringsToGuess[i]].notes[j].name + app.strings[app.config.stringsToGuess[i]].notes[j].octave);
+      }
+    }
+  }
+
+  return allOccurencesOfNoteA;
+};
+
+app.functions.finish = function(points) {
+  $('sogw').innerHTML = '<h1>Congrats!</h1><p>You have achieved ' + points + ' points.';
+};
+
+/* ############################################################################# CHECKS */
+
+app.functions.checks.findAnyOccurence = function() {
+  let notesToFindA = app.functions.getNotesToFind(),
+      points = 0;
+
+  app.functions.checks.findAnyOccurenceLoop(notesToFindA, points);
+};
+
+  app.functions.checks.findAnyOccurenceLoop = function(notesToFindA, points) {
+    let allOccurencesOfNote = app.functions.collectAllOccurencesOfNote(notesToFindA[0], false);
+
+    $('noteToFind').innerHTML = notesToFindA[0];
+
+    $('fretboard').addEventListener('click', function(e) {
+      // See if clicked fret is a #-note or not.
+      let clickedNote = app.functions.getNoteFromCellId(e.target.id);
+      $(e.target.id).innerHTML = clickedNote;
+
+      // Check, if clicked note is the searched one.
+      console.log(clickedNote, notesToFindA[0]);
+      if (clickedNote.indexOf(notesToFindA[0]) >= 0) {
+        $(e.target.id).classList.add('correct');
+        ++points;
+
+        // See if all notes are clicked.
+        allOccurencesOfNote.splice(allOccurencesOfNote.indexOf(e.target.id), 1);
+        if (allOccurencesOfNote.length == 0) {
+          // Call this function as long as there are notes to guess left
+          if (notesToFindA.length > 1) {
+            $('fretboard').removeEventListener("click", app.functions.getClickedId, false);
+            notesToFindA.shift();
+            app.functions.checks.findAnyOccurenceLoop(notesToFindA, points);
+          }
+          else {
+            app.functions.finish(points);
+          }
+        }
+      }
+      else {
+        $(e.target.id).classList.add('wrong');
+        --points;
+      }
+
+      $('points').innerHTML = points;
+    }, false);
+  };
+
+app.functions.checks.findAllOccurences = function() {
+  let notesToFindA = app.functions.getNotesToFind();
+
+  for (let i = 0, len = notesToFindA.length; i < len; ++i) {
+    $('noteToFind').innerHTML = notesToFindA[i];
+  };
+};
+
+/* ############################################################################# RUN */
+
+$('fretboard').innerHTML = app.functions.fillFretboard();
+
+app.functions.checks.findAnyOccurence();
+  </script>
+</body>
+</html>
